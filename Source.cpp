@@ -1,45 +1,22 @@
+#pragma once
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <time.h> 
-#include <glfw3.h>
-#include "GraphicsObject.h"
-#include "Shader.h"
-#include <thread>
-#include <chrono>
+#include "WindowContext.h"
+#include "ShaderProgramPipeline.h"
+#include "Context.h"
 
 using namespace std;
 using namespace glm;
 
-GLFWwindow* window;
-
 // GLEW and GLFW initialization. Projection and View matrix setup
 int init() {
-	// Initialise GLFW
-	if (!glfwInit())
-	{
-		fprintf(stderr, "Failed to initialize GLFW\n");
-		getchar();
-		return -1;
-	}
 
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(1200, 800, "BOIDS", NULL, NULL);
-	if (window == NULL) {
-		fprintf(stderr, "Failed to open GLFW window.\n");
-		getchar();
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
+	WindowContext(800, 600, "VISUAL COMPUTING");
 
 	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
@@ -53,47 +30,38 @@ int init() {
 	//Check version of OpenGL and print
 	std::printf("*** OpenGL Version: %s ***\n", glGetString(GL_VERSION));
 
-	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
-
-	// White background
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
 	// Enable depth test
-	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
 	glPointSize(3.0f);
 
-	Shader::activeShader = new InstancedLitShader("shaders\\InstancedVertexShader.VERTEXSHADER", "shaders\\InstancedFragmentShader.FRAGMENTSHADER");
-
-	int width, height;
-	glfwGetWindowSize(window, &width, &height);
-
 	srand(time(NULL));
 
-	return 1;
-}
-
-void drawingLoop()
-{
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			Shader::activeShader->Use();
-			glUniformMatrix4fv(Shader::activeShader->projectionID, 1, GL_FALSE, &(Camera::activeCamera->Projection[0][0]));
-			glUniformMatrix4fv(Shader::activeShader->viewID, 1, GL_FALSE, &(Camera::activeCamera->View[0][0]));
-		}
+	ShaderProgram::getShaderProgram<VertexShaderProgram>("shaders\\gPass.VERTEXSHADER", { tuple<const GLchar*, UniformType>("View", MATRIX4FV),
+		tuple<const GLchar*, UniformType>("Projection", MATRIX4FV),  tuple<const GLchar*, UniformType>("Model", MATRIX4FV), tuple<const GLchar*, UniformType>("selectedRef", ONEUI) }, "GPASSVS");
 	
-		// Swap buffers
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	} while (glfwWindowShouldClose(window) == 0);
-}
+	ShaderProgram::getShaderProgram<VertexShaderProgram>("shaders\\lightPass.VERTEXSHADER", {}, "LPASSVS");
+	
+	ShaderProgram::getShaderProgram<VertexShaderProgram>("shaders\\pointGPass.VERTEXSHADER", { tuple<const GLchar*, UniformType>("View", MATRIX4FV),
+		tuple<const GLchar*, UniformType>("Projection", MATRIX4FV),  tuple<const GLchar*, UniformType>("Model", MATRIX4FV), tuple<const GLchar*, UniformType>("selectedRef", ONEUI) }, "GPASSVS2");
 
-void updateLoop()
-{
-	stateSpace->update();
+	ShaderProgram::getShaderProgram<FragmentShaderProgram>("shaders\\gPass.FRAGMENTSHADER", {}, "GPASSFS");
+
+	ShaderProgram::getShaderProgram<FragmentShaderProgram>("shaders\\lightPass.FRAGMENTSHADER", { tuple<const GLchar*, UniformType>("gColors", TEXTURE),
+		tuple<const GLchar*, UniformType>("gNormals", TEXTURE), tuple<const GLchar*, UniformType>("gPositions", TEXTURE) }, "LPASSFS");
+
+	ShaderProgram::getShaderProgram<FragmentShaderProgram>("shaders\\pointGPass.FRAGMENTSHADER", {}, "GPASSFS2");
+
+	ShaderProgram::getShaderProgram<VertexShaderProgram>("GPASSVS")->attachToPipeline(ShaderProgramPipeline::getPipeline("A"));
+	ShaderProgram::getShaderProgram<VertexShaderProgram>("GPASSFS")->attachToPipeline(ShaderProgramPipeline::getPipeline("A"));
+
+	ShaderProgram::getShaderProgram<VertexShaderProgram>("LPASSVS")->attachToPipeline(ShaderProgramPipeline::getPipeline("B"));
+	ShaderProgram::getShaderProgram<VertexShaderProgram>("LPASSFS")->attachToPipeline(ShaderProgramPipeline::getPipeline("B"));
+
+	ShaderProgram::getShaderProgram<VertexShaderProgram>("GPASSVS2")->attachToPipeline(ShaderProgramPipeline::getPipeline("C"));
+	ShaderProgram::getShaderProgram<VertexShaderProgram>("GPASSFS2")->attachToPipeline(ShaderProgramPipeline::getPipeline("C"));
+
+	return 1;
 }
 
 int main()
@@ -101,9 +69,15 @@ int main()
 	if (init() < 0)
 		return -1;
 
-	thread update(updateLoop);
+	SurfaceViewContext* context1 = new SurfaceViewContext();
 
-	drawingLoop();
+	do {
+		AbstractContext::activeContext->update();
+		// Swap buffers
+		glfwSwapBuffers(WindowContext::window);
+		glfwPollEvents();
+
+	} while (glfwWindowShouldClose(WindowContext::window) == 0);
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

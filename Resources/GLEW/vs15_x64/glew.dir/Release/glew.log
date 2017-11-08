@@ -1,0 +1,5 @@
+﻿  Building Custom Rule C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLEW/build/cmake/CMakeLists.txt
+  CMake does not need to re-run because C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLEW/vs15_x64/CMakeFiles/generate.stamp is up-to-date.
+  glew.c
+     Creating library C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLEW/vs15_x64/lib/Release/glew32.lib and object C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLEW/vs15_x64/lib/Release/glew32.exp
+  glew.vcxproj -> C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLEW\vs15_x64\bin\Release\glew32.dll

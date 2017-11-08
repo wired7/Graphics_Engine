@@ -1,50 +1,85 @@
-#include "GraphicsObject.h"
+#pragma once
 
-void DecoratedGraphicsObject::enableBuffers()
+#include "GraphicsObject.h"
+#include "TextureManager.h"
+#include <iostream>
+
+using namespace Assimp;
+
+DecoratedGraphicsObject::DecoratedGraphicsObject(DecoratedGraphicsObject* child, string bufferSignature) : Decorator(child, bufferSignature)
+{
+
+}
+
+void DecoratedGraphicsObject::updateBuffers(vector<string> bufferSignatures)
+{
+
+}
+
+void DecoratedGraphicsObject::updateBuffersPartially(int minBufferIndex, int maxBufferIndex)
+{
+
+}
+
+void DecoratedGraphicsObject::updateBuffersPartially(int minBufferIndex, int maxBufferIndex, vector<string> bufferSignatures)
+{
+
+}
+
+void DecoratedGraphicsObject::enableBuffers(void)
 {
 	glBindVertexArray(VAO);
 
-	int min = 0;
-
-	if(child)
+	int index = 0;
+	if (child != nullptr)
 	{
-		min = child->layoutCount;
+		index = child->layoutCount;
+		child->enableBuffers();
 	}
 
-	for (int i = min; i < layoutCount; i++)
+	for (int i = index; i < layoutCount; i++)
 	{
 		glEnableVertexAttribArray(i);
 	}
 }
 
-MeshObject::MeshObject()
+string DecoratedGraphicsObject::printOwnProperties(void)
 {
-	layoutCount = 3;
+	return to_string(layoutCount) + "\n";
 }
 
-MeshObject::MeshObject(vector<Vertex> vertices, vector<GLuint> indices) : vertices(vertices), indices(indices)
+mat4 DecoratedGraphicsObject::getModelMatrix(void)
 {
-	layoutCount = 3;
-	bufferSignature = "VERTEX";
+	return model;
+}
+
+MeshObject::MeshObject() : DecoratedGraphicsObject(nullptr, "VERTEX")
+{
+	layoutCount = 2;
+}
+
+
+MeshObject::MeshObject(vector<Vertex> vertices, vector<GLuint> indices) : DecoratedGraphicsObject(nullptr, "VERTEX"), vertices(vertices), indices(indices)
+{
+	layoutCount = 2;
 	bindBuffers();
 }
 
 void MeshObject::commitVBOToGPU()
 {
-	glBindVertexArray(VAO);
-
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &(vertices[0]), GL_DYNAMIC_DRAW);
 
 	if (indices.size())
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_DYNAMIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &(indices[0]), GL_DYNAMIC_DRAW);
 	}
 
+	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, position));
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, color));
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
 
 	glBindVertexArray(0);
 }
@@ -52,6 +87,7 @@ void MeshObject::commitVBOToGPU()
 void MeshObject::bindBuffers(void)
 {
 	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
@@ -60,12 +96,13 @@ void MeshObject::bindBuffers(void)
 
 void MeshObject::updateBuffers(void)
 {
+	glBindVertexArray(VAO);
 	commitVBOToGPU();
 }
 
-void MeshObject::addVertex(vec3 pos, vec4 color, vec3 normal)
+void MeshObject::addVertex(vec3 pos, vec3 normal)
 {
-	vertices.push_back(Vertex(pos, normal, color));
+	vertices.push_back(Vertex(pos, normal));
 }
 
 void MeshObject::setLocalUniforms(void)
@@ -75,210 +112,97 @@ void MeshObject::setLocalUniforms(void)
 
 void MeshObject::draw(void)
 {
-	setLocalUniforms();
-	enableBuffers();
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
 
-template <class T> ExtendedMeshObject<T>::ExtendedMeshObject(DecoratedGraphicsObject* child, string bufferSignature, int divisor) :
-	child(child), bufferSignature(bufferSignature), divisor(divisor)
+ImportedMeshObject::ImportedMeshObject(const char* string) : MeshObject()
 {
-	layoutCount = child->layoutCount + 1;
-	VAO = child->VAO;
-}
+	loadFile(string);
 
-template <class T> ExtendedMeshObject<T>::ExtendedMeshObject(DecoratedGraphicsObject* child, vector<T> data, string bufferSignature, int divisor) :
-	child(child), extendedData(data), bufferSignature(bufferSignature), divisor(divisor)
-{
-	layoutCount = child->layoutCount + 1;
-	VAO = child->VAO;
-	bindBuffers();
-}
-
-template <class T> void ExtendedMeshObject<T>::addVertex(vec3 pos, vec4 color, vec3 normal)
-{
-	child->addVertex(pos, color, normal);
-}
-
-template <class T> void ExtendedMeshObject<T>::commitVBOToGPU(void)
-{
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, extendedData.size() * sizeof(T), &extendedData[0], GL_DYNAMIC_DRAW);
-
-	glVertexAttribPointer(layoutCount - 1, sizeof(T) / sizeof(float), GL_FLOAT, GL_FALSE, sizeof(T), (GLvoid*)0);
-	glVertexAttribDivisor(layoutCount - 1, divisor);
-
-	glBindVertexArray(0);
-}
-
-template <class T> void ExtendedMeshObject<T>::bindBuffers(void)
-{
-	glGenBuffers(1, &VBO);
-
-	commitVBOToGPU();
-}
-
-template <class T> void ExtendedMeshObject<T>::updateBuffers(void)
-{
-	commitVBOToGPU();
-}
-
-template <class T> void ExtendedMeshObject<T>::setLocalUniforms(void)
-{
-
-}
-
-template <class T> void ExtendedMeshObject<T>::draw(void)
-{
-	setLocalUniforms();
-	enableBuffers();
-	child->draw();
-}
-
-InstancedMeshObject::InstancedMeshObject(MeshObject* mesh, vector<mat4> matrices, vector<vec4> colors) :
-	instancedObject(mesh), matrices(matrices), colors(colors)
-{
-	if (this->matrices.size())
+	vec3 avg(0.0f, 0.0f, 0.0f);
+	vec3 min(INFINITY, INFINITY, INFINITY);
+	vec3 max(-INFINITY, -INFINITY, -INFINITY);
+	for (int i = 0; i < vertices.size(); i++)
 	{
-		bindBuffers();
-	}
-}
+		avg += vertices[i].position;
 
-void InstancedMeshObject::bindBuffers(void)
-{
-	// Set matrices buffer
-	glBindVertexArray(instancedObject->VAO);
-	glGenBuffers(1, &transformsBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, transformsBuffer);
-	glBufferData(GL_ARRAY_BUFFER, matrices.size() * sizeof(glm::mat4), &(matrices[0]), GL_DYNAMIC_DRAW);
-
-	// Matrix Columns
-	GLsizei vec4Size = sizeof(glm::vec4);
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (GLvoid*)0);
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (GLvoid*)(vec4Size));
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (GLvoid*)(2 * vec4Size));
-	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (GLvoid*)(3 * vec4Size));
-
-	// Divisors
-	glVertexAttribDivisor(3, 1);
-	glVertexAttribDivisor(4, 1);
-	glVertexAttribDivisor(5, 1);
-	glVertexAttribDivisor(6, 1);
-
-	// Set colors buffer
-	glGenBuffers(1, &colorsBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, colorsBuffer);
-	glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec4), &(colors[0]), GL_DYNAMIC_DRAW);
-
-	// Color
-	glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, vec4Size, (GLvoid*)0);
-
-	// Divisor
-	glVertexAttribDivisor(7, matrices.size() / colors.size());
-
-	glBindVertexArray(0);
-
-}
-
-void InstancedMeshObject::enableBuffers(void)
-{
-	instancedObject->enableBuffers();
-	glEnableVertexAttribArray(3);
-	glEnableVertexAttribArray(4);
-	glEnableVertexAttribArray(5);
-	glEnableVertexAttribArray(6);
-	glEnableVertexAttribArray(7);
-}
-
-
-
-void InstancedMeshObject::updateBuffers()
-{
-	glBindVertexArray(instancedObject->VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, transformsBuffer);
-	glBufferData(GL_ARRAY_BUFFER, matrices.size() * sizeof(glm::mat4), &(matrices[0]), GL_DYNAMIC_DRAW);
-
-	glBindVertexArray(0);
-}
-
-void InstancedMeshObject::draw()
-{
-	enableBuffers();
-	setLocalUniforms();
-	glDrawElementsInstanced(GL_TRIANGLES, instancedObject->indices.size(), GL_UNSIGNED_INT, 0, matrices.size());
-	glBindVertexArray(0);
-}
-
-Polyhedron::Polyhedron(int resolution, vec3 pos, vec3 radii, vec4 color)
-{
-	model = scale(translate(mat4(1.0f), pos), radii);
-	this->resolution = resolution;
-
-	double theta = 2 * 3.1415 / resolution;
-	double phi = 3.1415 / resolution;
-	vector<vector<vec3>> circles;
-	vec3 start(0, -0.5f, 0);
-	for (int j = 1; j < resolution; j++)
-	{
-		vec3 temp = rotate(start, (GLfloat)(phi * j), vec3(0, 0, 1));
-		circles.push_back(vector<vec3>());
-		for (int i = 0; i < resolution; i++)
-			circles[circles.size() - 1].push_back(rotate(temp, (GLfloat)(theta * i), vec3(0, 1, 0)));
-	}
-
-	for (int j = 0; j < circles.size(); j++)
-	{
-		for (int i = 0; i < circles[j].size(); i++)
+		for (int j = 0; j < 3; j++)
 		{
-			addVertex(circles[j][i], color, normalize(circles[j][i]));
-
-			if (j > 0 && i > 0)
+			if (vertices[i].position[j] > max[j])
 			{
-				indices.push_back(vertices.size() - 2 - circles[j].size());
-				indices.push_back(vertices.size() - 2);
-				indices.push_back(vertices.size() - 1 - circles[j].size());
-
-				indices.push_back(vertices.size() - 2);
-				indices.push_back(vertices.size() - 1);
-				indices.push_back(vertices.size() - 1 - circles[j].size());
+				max[j] = vertices[i].position[j];
+			}
+			else if (vertices[i].position[j] < min[j])
+			{
+				min[j] = vertices[i].position[j];
 			}
 		}
-
-		if (j > 0)
-		{
-			indices.push_back(vertices.size() - 1 - circles[j].size());
-			indices.push_back(vertices.size() - 1);
-			indices.push_back(vertices.size() - 2 * circles[j].size());
-
-			indices.push_back(vertices.size() - 1);
-			indices.push_back(vertices.size() - 2 * circles[j].size());
-			indices.push_back(vertices.size() - circles[j].size());
-		}
 	}
 
-	addVertex(start, color, start);
-	addVertex(-start, color, -start);
+	vec3 diff = max - min;
 
-	for (int i = 0; i < resolution; i++)
+	if (vertices.size())
 	{
-		indices.push_back(i);
-		indices.push_back((i + 1) % resolution);
-		indices.push_back(vertices.size() - 2);
+		avg /= vertices.size();
+	}
 
-		indices.push_back(vertices.size() - 2 - resolution + i);
-		indices.push_back(vertices.size() - resolution + (i + 1) % resolution - 2);
-		indices.push_back(vertices.size() - 1);
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		vertices[i].position -= avg;
+		vertices[i].position /= diff.length();
 	}
 
 	bindBuffers();
 }
 
-void Polyhedron::draw(void)
+void ImportedMeshObject::loadFile(const char* filePath)
 {
-	enableBuffers();
-	glUniformMatrix4fv(Shader::activeShader->modelID, 1, GL_FALSE, &model[0][0]);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	Importer importer;
+	const aiScene* scene = importer.ReadFile(filePath, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+	if (!scene)
+	{
+		return;
+	}
+	for (int i = 0, count = 0; i < scene->mNumMeshes; i++)
+	{
+		aiMesh* mesh = scene->mMeshes[i];
+		int iMeshFaces = mesh->mNumFaces;
+		for (int j = 0; j < iMeshFaces; j++)
+		{
+			const aiFace& face = mesh->mFaces[j];
+			vec3 nSum(0.0f, 0.0f, 0.0f);
+			for (int k = 0; k < 3; k++)
+			{
+				aiVector3D pos = mesh->mVertices[face.mIndices[k]];
+				aiVector3D normal = mesh->HasNormals() ? mesh->mNormals[face.mIndices[k]] : aiVector3D(1.0f, 1.0f, 1.0f);
+				addVertex(vec3(pos.x, pos.y, pos.z), (1.0f - 2.0f * (i % 2)) * vec3(normal.x, normal.y, normal.z));
+				indices.push_back(count++);
+			}
+		}
+	}
+}
+
+TexturedMeshObject::TexturedMeshObject(DecoratedGraphicsObject* child, char* filename, vector<vec2> data) : ExtendedMeshObject(child, data, "UVTEXTURE")
+{
+	loadTexture(filename);
+}
+
+TexturedMeshObject::TexturedMeshObject(DecoratedGraphicsObject* child, GLuint texture, vector<vec2> data) : ExtendedMeshObject(child, data, "UVTEXTURE"), texture(texture)
+{
+
+}
+
+void TexturedMeshObject::loadTexture(char* filePath)
+{
+	std::ifstream in(filePath, std::ios::in);
+	assert(in.is_open());
+
+	texture = TextureManager::instance()->addTexture(filePath);
+}
+
+void TexturedMeshObject::enableBuffers(void)
+{
+	DecoratedGraphicsObject::enableBuffers();
+	glBindTexture(GL_TEXTURE_2D, texture);
 }

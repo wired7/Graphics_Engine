@@ -1,0 +1,124 @@
+The system is: Windows - 10.0.14393 - AMD64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler:  
+Build flags: 
+Id flags:  
+
+The output was:
+0
+Microsoft (R) Build Engine version 15.3.409.57025 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2017-10-03 6:09:23 PM.
+Project "C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\3.9.3\CompilerIdC\CompilerIdC.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "Debug\".
+  Creating directory "Debug\CompilerIdC.tlog\".
+InitializeBuildStatus:
+  Creating "Debug\CompilerIdC.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.11.25503\bin\HostX86\x64\CL.exe /c /nologo /W0 /WX- /diagnostics:classic /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TC /errorReport:queue CMakeCCompilerId.c
+  CMakeCCompilerId.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.11.25503\bin\HostX86\x64\link.exe /ERRORREPORT:QUEUE /OUT:".\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\CompilerIdC.lib" /MACHINE:X64 Debug\CMakeCCompilerId.obj
+  CompilerIdC.vcxproj -> C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\3.9.3\CompilerIdC\.\CompilerIdC.exe
+PostBuildEvent:
+  for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
+  :VCEnd
+  CMAKE_C_COMPILER=C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.11.25503\bin\Hostx86\x64\cl.exe
+FinalizeBuildStatus:
+  Deleting file "Debug\CompilerIdC.tlog\unsuccessfulbuild".
+  Touching "Debug\CompilerIdC.tlog\CompilerIdC.lastbuildstate".
+Done Building Project "C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\3.9.3\CompilerIdC\CompilerIdC.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.31
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
+
+The C compiler identification is MSVC, found in "C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/CMakeFiles/3.9.3/CompilerIdC/CompilerIdC.exe"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise/MSBuild/15.0/Bin/MSBuild.exe" "cmTC_77eea.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=15.0"
+Microsoft (R) Build Engine version 15.3.409.57025 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2017-10-03 6:09:25 PM.
+Project "C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\cmTC_77eea.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_77eea.dir\Debug\".
+  Creating directory "C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_77eea.dir\Debug\cmTC_77eea.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_77eea.dir\Debug\cmTC_77eea.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.11.25503\bin\HostX86\x64\CL.exe /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_77eea.dir\Debug\\" /Fd"cmTC_77eea.dir\Debug\vc141.pdb" /Gd /TC /errorReport:queue C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\testCCompiler.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.11.25508.2 for x64
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  testCCompiler.c
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_77eea.dir\Debug\\" /Fd"cmTC_77eea.dir\Debug\vc141.pdb" /Gd /TC /errorReport:queue C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\testCCompiler.c
+  
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.11.25503\bin\HostX86\x64\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\Debug\cmTC_77eea.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/CMakeFiles/CMakeTmp/Debug/cmTC_77eea.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/CMakeFiles/CMakeTmp/Debug/cmTC_77eea.lib" /MACHINE:X64  /machine:x64 cmTC_77eea.dir\Debug\testCCompiler.obj
+  cmTC_77eea.vcxproj -> C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\Debug\cmTC_77eea.exe
+  cmTC_77eea.vcxproj -> C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/CMakeFiles/CMakeTmp/Debug/cmTC_77eea.pdb (Full PDB)
+FinalizeBuildStatus:
+  Deleting file "cmTC_77eea.dir\Debug\cmTC_77eea.tlog\unsuccessfulbuild".
+  Touching "cmTC_77eea.dir\Debug\cmTC_77eea.tlog\cmTC_77eea.lastbuildstate".
+Done Building Project "C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\cmTC_77eea.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.43
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise/MSBuild/15.0/Bin/MSBuild.exe" "cmTC_01da0.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=15.0"
+Microsoft (R) Build Engine version 15.3.409.57025 for .NET Framework
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2017-10-03 6:09:27 PM.
+Project "C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\cmTC_01da0.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTC_01da0.dir\Debug\".
+  Creating directory "C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTC_01da0.dir\Debug\cmTC_01da0.tlog\".
+InitializeBuildStatus:
+  Creating "cmTC_01da0.dir\Debug\cmTC_01da0.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.11.25503\bin\HostX86\x64\CL.exe /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_01da0.dir\Debug\\" /Fd"cmTC_01da0.dir\Debug\vc141.pdb" /Gd /TC /errorReport:queue "C:\Program Files\CMake\share\cmake-3.9\Modules\CMakeCCompilerABI.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.11.25508.2 for x64
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  CMakeCCompilerABI.c
+  cl /c /Zi /W3 /WX- /diagnostics:classic /Od /Ob0 /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_01da0.dir\Debug\\" /Fd"cmTC_01da0.dir\Debug\vc141.pdb" /Gd /TC /errorReport:queue "C:\Program Files\CMake\share\cmake-3.9\Modules\CMakeCCompilerABI.c"
+  
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.11.25503\bin\HostX86\x64\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\Debug\cmTC_01da0.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/CMakeFiles/CMakeTmp/Debug/cmTC_01da0.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/CMakeFiles/CMakeTmp/Debug/cmTC_01da0.lib" /MACHINE:X64  /machine:x64 cmTC_01da0.dir\Debug\CMakeCCompilerABI.obj
+  cmTC_01da0.vcxproj -> C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\Debug\cmTC_01da0.exe
+  cmTC_01da0.vcxproj -> C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/CMakeFiles/CMakeTmp/Debug/cmTC_01da0.pdb (Full PDB)
+FinalizeBuildStatus:
+  Deleting file "cmTC_01da0.dir\Debug\cmTC_01da0.tlog\unsuccessfulbuild".
+  Touching "cmTC_01da0.dir\Debug\cmTC_01da0.tlog\cmTC_01da0.lastbuildstate".
+Done Building Project "C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\CMakeFiles\CMakeTmp\cmTC_01da0.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.43
+
+

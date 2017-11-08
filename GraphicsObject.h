@@ -1,10 +1,12 @@
 #pragma once
-#include "Shader.h"
-#include <vector>
 #include <glew.h>
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtx/rotate_vector.hpp>
+#include <Importer.hpp>      // C++ importer interface
+#include <scene.h>           // Output data structure
+#include <postprocess.h>     // Post processing fla
+#include "Decorator.h"
 
 using namespace glm;
 using namespace std;
@@ -14,36 +16,25 @@ using namespace std;
 
 struct Vertex {
 	glm::vec3 position;
-	glm::vec4 color;
 	glm::vec3 normal;
 
 	Vertex() {};
-	Vertex(vec3 pos, vec3 norm, vec4 col) : position(pos), normal(norm), color(col) {};
+	Vertex(vec3 pos, vec3 norm) : position(pos), normal(norm) {};
 };
 
-class DecoratedGraphicsObject
+class DecoratedGraphicsObject : public Decorator<DecoratedGraphicsObject>
 {
+protected:
+	mat4 model = mat4(1.0f);
 public:
-	DecoratedGraphicsObject* child;
 	GLuint VAO;
 	GLuint VBO;
 	bool dirty = false;
 	int layoutCount;
-	string bufferSignature;
 	DecoratedGraphicsObject() {};
+	DecoratedGraphicsObject(DecoratedGraphicsObject* child, string bufferSignature);
 	~DecoratedGraphicsObject() {};
-	// TODO: Recursive Lookup of signature through children
-	virtual bool signatureLookup(string signature);
-	virtual bool signatureLookup(vector<string> signatures);
-	// TODO: Look for buffer with signature and call the function at occurrence
-	virtual bool signatureCallback(string signature/*, function callback*/);
-	virtual bool signatureCalback(vector<string> signatures/*, function callback*/);
-	// TODO: Look for the signature recursively, add it on top of signature owner, reorganize layout indices and bind all shifted buffers, including the new one
-	virtual DecoratedGraphicsObject* addOnTopOf(string bufferSignature);
-	// TODO: Look for the signature recursively, unbind it from the VAO, delete VBO, return its child, and reorganize layout indices from any child and parent
-	// so that they're sequential, and rebind every buffer that was shifted to the proper layout number
-	virtual DecoratedGraphicsObject* remove(string bufferSignature);
-	virtual DecoratedGraphicsObject* remove(vector<string> bufferSignatures);
+	virtual void addVertex(vec3 pos, vec3 normal) = 0;
 	virtual void commitVBOToGPU(void) = 0;
 	virtual void bindBuffers(void) = 0;
 	virtual void updateBuffers(void) = 0;
@@ -53,13 +44,14 @@ public:
 	virtual void updateBuffersPartially(int minBufferIndex, int maxBufferIndex, vector<string> bufferSignatures);
 	virtual void enableBuffers(void);
 	virtual void setLocalUniforms(void) = 0;
-	virtual void draw() = 0;
+	virtual void draw(void) = 0;
+	virtual string printOwnProperties(void);
+	mat4 getModelMatrix();
 };
 
 class MeshObject : public DecoratedGraphicsObject
 {
 public:
-	mat4 model;
 	vector<Vertex> vertices;
 	vector<GLuint> indices;
 	GLuint EBO;
@@ -68,58 +60,235 @@ public:
 	MeshObject(vector<Vertex> vertices, vector<GLuint> indices);
 	~MeshObject() {};
 
-	virtual void addVertex(vec3 pos, vec4 color, vec3 normal);
-	virtual void addTriangle(int a, int b, int c);
+	virtual DecoratedGraphicsObject* make() { return NULL; };
+	virtual void computeNormals() {};
+	virtual void addVertex(vec3 pos, vec3 normal = vec3());
+	virtual void addTriangle(int a, int b, int c) {};
 	// TODO: apply vertex deletion, but careful! when a vertex is deleted from the buffer, all of the indices change, and it's necessary to also
 	// remove any triangles that may refer to that vertex index first
-	virtual void deleteVertex(int index);
+	virtual void deleteVertex(int index) {};
 	// TODO: apply triangle deletion by looking for matching triples in any order within the indices array
-	virtual void deleteTriangle(int a, int b, int c);
-	virtual void commitVBOToGPU(void) = 0;
+	virtual void deleteTriangle(int a, int b, int c) {};
+	virtual void commitVBOToGPU(void);
 	virtual void bindBuffers(void);
 	virtual void updateBuffers(void);
 	virtual void setLocalUniforms(void);
-	virtual void draw();
+	virtual void draw(void);
 };
 
-template <class T> class ExtendedMeshObject<T> : DecoratedGraphicsObject
+class ImportedMeshObject : public MeshObject
 {
+public:
+	ImportedMeshObject(const char* filePath);
+	~ImportedMeshObject() {};
+	void loadFile(const char* filePath);
+};
+
+template <class T, class S> class ExtendedMeshObject : public DecoratedGraphicsObject
+{
+public:
 	vector<T> extendedData;
-	ExtendedMeshObject(DecoratedGraphicsObject* child, string bufferSignature, int divisor = 1);
-	ExtendedMeshObject(DecoratedGraphicsObject* child, vector<T> data, string bufferSignature, int divisor = 1);
+	ExtendedMeshObject() {};
+	ExtendedMeshObject(DecoratedGraphicsObject* child, string bufferSignature);
+	ExtendedMeshObject(DecoratedGraphicsObject* child, vector<T> data, string bufferSignature);
 	~ExtendedMeshObject() {};
+
+	virtual DecoratedGraphicsObject* make();
+	virtual void addVertex(vec3 pos, vec3 normal);
 	virtual void commitVBOToGPU(void);
 	virtual void bindBuffers(void);
 	virtual void updateBuffers(void);
 	virtual void setLocalUniforms(void);
-	virtual void draw();
+	virtual void draw(void);
 };
 
-class TexturedMeshObject : public ExtendedMeshObject<vec2>
+#pragma region ExtendedMeshObjectTemplate
+template <class T, class S> ExtendedMeshObject<T, S>::ExtendedMeshObject(DecoratedGraphicsObject* child, string bufferSignature) :
+	DecoratedGraphicsObject(child, bufferSignature)
 {
-	TexturedMeshObject(DecoratedGraphicsObject* child, string filename, int divisor = 1);
-	TexturedMeshObject(DecoratedGraphicsObject* child, string filename, vector<vec2> data, int divisor = 1);
+	layoutCount = child->layoutCount + 1;
+	VAO = child->VAO;
+}
+
+template <class T, class S> ExtendedMeshObject<T, S>::ExtendedMeshObject(DecoratedGraphicsObject* child, vector<T> data, string bufferSignature) :
+	DecoratedGraphicsObject(child, bufferSignature), extendedData(data)
+{
+	layoutCount = child->layoutCount + 1;
+	VAO = child->VAO;
+	bindBuffers();
+}
+
+template <class T, class S> DecoratedGraphicsObject* ExtendedMeshObject<T, S>::make(void)
+{
+	return new ExtendedMeshObject<T, S>(nullptr, extendedData, signature);
+}
+
+template <class T, class S> void ExtendedMeshObject<T, S>::addVertex(vec3 pos, vec3 normal)
+{
+	child->addVertex(pos, normal);
+}
+
+template <class T, class S> void ExtendedMeshObject<T, S>::commitVBOToGPU(void)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, extendedData.size() * sizeof(T), &(extendedData[0]), GL_DYNAMIC_DRAW);
+
+	glEnableVertexAttribArray(layoutCount - 1);
+	glVertexAttribPointer(layoutCount - 1, sizeof(T) / sizeof(S), GL_FLOAT, GL_FALSE, sizeof(T), (GLvoid*)0);
+
+	glBindVertexArray(0);
+}
+
+template <class T, class S> void ExtendedMeshObject<T, S>::bindBuffers(void)
+{
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
+
+	commitVBOToGPU();
+}
+
+template <class T, class S> void ExtendedMeshObject<T, S>::updateBuffers(void)
+{
+	glBindVertexArray(VAO);
+
+	commitVBOToGPU();
+}
+
+template <class T, class S> void ExtendedMeshObject<T, S>::setLocalUniforms(void)
+{
+
+}
+
+template <class T, class S> void ExtendedMeshObject<T, S>::draw(void)
+{
+	child->draw();
+}
+#pragma endregion
+
+class TexturedMeshObject : public ExtendedMeshObject<vec2, float>
+{
+public:
+	GLuint texture;
+
+	TexturedMeshObject(DecoratedGraphicsObject* child, char* filename, vector<vec2> data);
+	TexturedMeshObject(DecoratedGraphicsObject* child, GLuint texture, vector<vec2> data);
 	~TexturedMeshObject() {};
-	virtual void commitVBOToGPU(void);
+
+	virtual void loadTexture(char* filePath);
+	virtual void enableBuffers(void);
 };
 
-template <class T> class InstancedMeshObject<T> : public ExtendedMeshObject<T>
+template <class T, class S> class InstancedMeshObject : public ExtendedMeshObject<T, S>
 {
 public:
-	InstancedMeshObject(DecoratedGraphicsObject* mesh, int divisor = 1);
-	InstancedMeshObject(DecoratedGraphicsObject* mesh, vector<T> data, int divisor = 1);
+	MeshObject* instancedObject;
+	int divisor;
+
+	InstancedMeshObject() {};
+	InstancedMeshObject(DecoratedGraphicsObject* child, string bufferSignature, int divisor = 1);
+	InstancedMeshObject(DecoratedGraphicsObject* child, vector<T> data, string bufferSignature, int divisor = 1);
 	~InstancedMeshObject() {};
+
 	virtual void commitVBOToGPU(void);
-	virtual void bindBuffers(void);
-	virtual void updateBuffers(void);
-	virtual void draw();
+	virtual void draw(void);
 };
 
-class Polyhedron : public MeshObject
+#pragma region InstancedMeshObjectTemplate
+template <class T, class S> InstancedMeshObject<T, S>::InstancedMeshObject(DecoratedGraphicsObject* child, string bufferSignature, int divisor) : 
+	ExtendedMeshObject<T, S>(child, bufferSignature), divisor(divisor)
+{
+	instancedObject = (MeshObject*)signatureLookup("VERTEX");
+};
+
+template <class T, class S> InstancedMeshObject<T, S>::InstancedMeshObject(DecoratedGraphicsObject* child, vector<T> data, string bufferSignature, int divisor) : 
+	ExtendedMeshObject<T, S>(child, bufferSignature), divisor(divisor)
+{
+	instancedObject = (MeshObject*)signatureLookup("VERTEX");
+	extendedData = data;
+	bindBuffers();
+};
+
+template <class T, class S> void InstancedMeshObject<T, S>::commitVBOToGPU(void)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, extendedData.size() * sizeof(T), &(extendedData[0]), GL_DYNAMIC_DRAW);
+
+	auto glType = GL_FLOAT;
+
+	if (std::is_same<S, GLdouble>::value || std::is_same<S, double>::value)
+	{
+		glType = GL_DOUBLE;
+	}
+	else if (std::is_same<S, GLbyte>::value || std::is_same<S, bool>::value)
+	{
+		glType = GL_BYTE;
+	}
+
+	glEnableVertexAttribArray(layoutCount - 1);
+	glVertexAttribPointer(layoutCount - 1, sizeof(T) / sizeof(S), glType, GL_FALSE, sizeof(T), (GLvoid*)0);
+	glVertexAttribDivisor(layoutCount - 1, divisor);
+
+	glBindVertexArray(0);
+}
+
+template <class T, class S> void InstancedMeshObject<T, S>::draw(void)
+{
+	glDrawElementsInstanced(GL_TRIANGLES, instancedObject->indices.size(), GL_UNSIGNED_INT, 0, extendedData.size() * divisor);
+	glBindVertexArray(0);
+}
+#pragma endregion
+
+template <class T, class S> class MatrixInstancedMeshObject : public InstancedMeshObject<T, S>
 {
 public:
-	int resolution;
-	Polyhedron() {};
-	Polyhedron(int, vec3, vec3, vec4);
-	void draw();
+	MatrixInstancedMeshObject() {};
+	MatrixInstancedMeshObject(DecoratedGraphicsObject* child, string bufferSignature, int divisor = 1);
+	MatrixInstancedMeshObject(DecoratedGraphicsObject* child, vector<T> data, string bufferSignature, int divisor = 1);
+	~MatrixInstancedMeshObject() {};
+
+	virtual void commitVBOToGPU(void);
 };
+
+#pragma region MatrixInstancedObjectTemplate
+template <class T, class S> MatrixInstancedMeshObject<T, S>::MatrixInstancedMeshObject(DecoratedGraphicsObject* child, string bufferSignature, int divisor = 1) :
+	InstancedMeshObject<T, S>(child, bufferSignature, divisor)
+{
+	layoutCount += 3;
+}
+
+template <class T, class S> MatrixInstancedMeshObject<T, S>::MatrixInstancedMeshObject(DecoratedGraphicsObject* child, vector<T> data, string bufferSignature, int divisor = 1) :
+	InstancedMeshObject<T, S>(child, bufferSignature, divisor)
+{
+	layoutCount += 3;
+
+	extendedData = data;
+	bindBuffers();
+}
+
+template <class T, class S> void MatrixInstancedMeshObject<T, S>::commitVBOToGPU(void)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, extendedData.size() * sizeof(T), &(extendedData[0]), GL_DYNAMIC_DRAW);
+
+	auto glType = GL_FLOAT;
+
+	if (std::is_same<S, GLdouble>::value || std::is_same<S, double>::value)
+	{
+		glType = GL_DOUBLE;
+	}
+	else if (std::is_same<S, GLbyte>::value || std::is_same<S, bool>::value)
+	{
+		glType = GL_BYTE;
+	}
+
+	for (int i = layoutCount - 4, j = 0; i < layoutCount; i++, j++)
+	{
+		glEnableVertexAttribArray(i);
+		glVertexAttribPointer(i, sizeof(T) / 4 / sizeof(S), glType, GL_FALSE, sizeof(T), (GLvoid*)(sizeof(T) * j / 4));
+		glVertexAttribDivisor(i, divisor);
+	}
+
+	glBindVertexArray(0);
+}
+
+#pragma endregion

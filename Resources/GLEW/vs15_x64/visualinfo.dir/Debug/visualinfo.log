@@ -1,0 +1,5 @@
+﻿  Building Custom Rule C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLEW/build/cmake/CMakeLists.txt
+  CMake does not need to re-run because C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLEW/vs15_x64/CMakeFiles/generate.stamp is up-to-date.
+  visualinfo.c
+  visualinfo.vcxproj -> C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLEW\vs15_x64\bin\Debug\visualinfo.exe
+  visualinfo.vcxproj -> C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLEW/vs15_x64/bin/Debug/visualinfo.pdb (Full PDB)

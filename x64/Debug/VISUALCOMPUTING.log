@@ -1,0 +1,19 @@
+﻿  Context.cpp
+c:\users\andres\source\repos\graphics_engine\graphicsobject.h(253): warning C5037: 'MatrixInstancedMeshObject<T,S>::MatrixInstancedMeshObject': an out-of-line definition of a member of a class template cannot have default arguments
+c:\users\andres\source\repos\graphics_engine\graphicsobject.h(259): warning C5037: 'MatrixInstancedMeshObject<T,S>::MatrixInstancedMeshObject': an out-of-line definition of a member of a class template cannot have default arguments
+c:\users\andres\source\repos\graphics_engine\context.cpp(54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\andres\source\repos\graphics_engine\graphicsobject.h(236): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+  c:\users\andres\source\repos\graphics_engine\graphicsobject.h(235): note: while compiling class template member function 'void InstancedMeshObject<T,S>::draw(void)'
+          with
+          [
+              T=glm::mat4,
+              S=float
+          ]
+  c:\users\andres\source\repos\graphics_engine\graphicsobject.h(242): note: see reference to class template instantiation 'InstancedMeshObject<T,S>' being compiled
+          with
+          [
+              T=glm::mat4,
+              S=float
+          ]
+  c:\users\andres\source\repos\graphics_engine\context.cpp(47): note: see reference to class template instantiation 'MatrixInstancedMeshObject<glm::mat4,float>' being compiled
+  VISUALCOMPUTING.vcxproj -> C:\Users\Andres\source\repos\Graphics_Engine\x64\Debug\VISUALCOMPUTING.exe

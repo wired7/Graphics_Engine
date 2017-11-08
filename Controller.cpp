@@ -1,40 +1,8 @@
 #include "Controller.h"
 
-Controller* Controller::activeController = NULL;
+using namespace std;
 
-void Controller::setController(Controller* controller)
-{
-	activeController = controller;
-
-	glfwSetKeyCallback(Camera::activeCamera->window, activeController->key_callback);
-	glfwSetScrollCallback(Camera::activeCamera->window, activeController->scroll_callback);
-	glfwSetMouseButtonCallback(Camera::activeCamera->window, activeController->mouse_callback);
-	glfwSetCursorPosCallback(Camera::activeCamera->window, activeController->mousePos_callback);
-	glfwSetWindowSizeCallback(Camera::activeCamera->window, activeController->windowResize_callback);
-}
-
-// Convert mouse screen coordinates to GUI coordinates
-glm::vec2 Controller::mouseScreenToGUICoords(GLFWwindow* window, double x, double y)
-{
-	glm::vec2 coords;
-
-	float guiScaleX;
-	float guiScaleY;
-
-	float GUI_RES_X = 1200;
-	float GUI_RES_Y = 800;
-
-	guiScaleX = Camera::activeCamera->getScreenWidth() / GUI_RES_X;
-	guiScaleY = Camera::activeCamera->getScreenHeight() / GUI_RES_Y;
-
-	coords = glm::vec2(x / guiScaleX, GUI_RES_Y - y / guiScaleY);
-
-	return coords;
-}
-
-StateSpaceController* StateSpaceController::controller = NULL;
-
-StateSpaceController::StateSpaceController()
+SurfaceViewController::SurfaceViewController()
 {
 	key_callback = kC;
 	scroll_callback = sC;
@@ -43,92 +11,35 @@ StateSpaceController::StateSpaceController()
 	windowResize_callback = wRC;
 }
 
-StateSpaceController::~StateSpaceController()
+SurfaceViewController::~SurfaceViewController()
 {
 }
 
-void StateSpaceController::kC(GLFWwindow* window, int key, int scancode, int action, int mods)
+void SurfaceViewController::kC(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_P && action == GLFW_PRESS)
+	if (key == GLFW_KEY_N && action == GLFW_RELEASE)
 	{
-		
-	}
-
-	if ((key == GLFW_KEY_W))
-	{
-		InputState::wPressed = true;
-		StateSpaceCamera* activeCam = (StateSpaceCamera*)Camera::activeCamera;
-		activeCam->translate(0.1f * vec2(1.0f));
-		activeCam->update();
-	}
-
-	if ((key == GLFW_KEY_S))
-	{
-		InputState::sPressed = true;
-		StateSpaceCamera* activeCam = (StateSpaceCamera*)Camera::activeCamera;
-		activeCam->translate(-0.1f * vec2(1.0f));
-		activeCam->update();
-	}
-
-
-	if ((key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) && action == GLFW_PRESS)
-	{
-		InputState::shiftPressed = true;
-	}
-
-	if ((key == GLFW_KEY_LEFT_CONTROL || key == GLFW_KEY_RIGHT_CONTROL) && action == GLFW_PRESS)
-	{
-		InputState::controlPressed = true;
-	}
-
-	if ((key == GLFW_KEY_LEFT_ALT || key == GLFW_KEY_RIGHT_ALT) && action == GLFW_PRESS)
-	{
-		InputState::altPressed = true;
-	}
-
-	if (key == GLFW_KEY_R && action == GLFW_RELEASE)
-	{
-		InputState::playRotation ^= true;
-	}
-
-	if ((key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) && action == GLFW_RELEASE)
-	{
-		InputState::shiftPressed = false;
-	}
-
-	if ((key == GLFW_KEY_LEFT_CONTROL || key == GLFW_KEY_RIGHT_CONTROL) && action == GLFW_RELEASE)
-	{
-		InputState::controlPressed = false;
-	}
-
-	if ((key == GLFW_KEY_LEFT_ALT || key == GLFW_KEY_RIGHT_ALT) && action == GLFW_RELEASE)
-	{
-		InputState::altPressed = false;
+		auto n = new PointSamplingContext(controller->context->geometries[0], controller->context->cameras[0]);
+		n->setAsActiveContext();
 	}
 }
 
-void StateSpaceController::sC(GLFWwindow* window, double xOffset, double yOffset)
+void SurfaceViewController::sC(GLFWwindow* window, double xOffset, double yOffset)
 {
+	SphericalCamera* cam = controller->context->cameras[0];
+	cameraMovement(cam, xOffset, yOffset);
 
-	StateSpaceCamera* activeCam = (StateSpaceCamera*)Camera::activeCamera;
-	activeCam->camTheta -= 0.1 * (GLfloat)xOffset;
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+	getPickingID((GeometryPass*)controller->context->passRootNode, xpos, ypos);
 
-	if (InputState::shiftPressed)
-	{
-		if (abs(activeCam->camPhi + 0.1 * (GLfloat)yOffset) < 3.1415 / 2)
-			activeCam->camPhi += 0.1 * (GLfloat)yOffset;
-	}
-	else
-		activeCam->translate(0.1f * vec2(yOffset, yOffset));
-
-	activeCam->update();
+	controller->context->dirty = true;
 }
 
-void StateSpaceController::mC(GLFWwindow* window, int button, int action, int mods)
+void SurfaceViewController::mC(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 	{
-		InputState::mouseButtonLeftPressed = true;
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
@@ -137,52 +48,45 @@ void StateSpaceController::mC(GLFWwindow* window, int button, int action, int mo
 	}
 	if ((button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT) && action == GLFW_RELEASE)
 	{
-		InputState::mouseButtonLeftPressed = false;
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 }
 
-void StateSpaceController::mPC(GLFWwindow* window, double xpos, double ypos)
+void SurfaceViewController::mPC(GLFWwindow* window, double xpos, double ypos)
 {
-	double deltaX = xpos - InputState::previousMousePosX;
-	double deltaY = ypos - InputState::previousMousePosY;
-
-	if (InputState::mouseButtonLeftPressed)
-	{
-		StateSpaceCamera* activeCam = (StateSpaceCamera*)Camera::activeCamera;
-		activeCam->camTheta += 0.005 * (GLfloat)deltaX;
-		activeCam->camPhi -= 0.005 * (GLfloat)deltaY;
-
-		activeCam->update();
-	}
-
-	InputState::previousMousePosX = xpos;
-	InputState::previousMousePosY = ypos;
-
-	InputState::mouseCoords = glm::vec2(xpos, ypos);
-	InputState::mouseGuiCoords = mouseScreenToGUICoords(window, xpos, ypos);
+	getPickingID((GeometryPass*)controller->context->passRootNode, xpos, ypos);
+	controller->context->dirty = true;
 }
 
-void StateSpaceController::wRC(GLFWwindow*, int, int)
+void SurfaceViewController::wRC(GLFWwindow*, int a, int b)
 {
-	Camera::activeCamera->update();
+	controller->context->cameras[0]->update();
+	controller->context->dirty = true;
 }
 
-Controller* StateSpaceController::getController()
+void SurfaceViewController::cameraMovement(SphericalCamera* cam, double xOffset, double yOffset)
 {
-	if (controller == NULL)
-	{
-		controller = new StateSpaceController();
-	}
-
-	return controller;
+	cam->camTheta -= 0.1 * (GLfloat)xOffset;
+	cam->translate(5.0f * vec2(yOffset, yOffset));
+	cam->update();
 }
 
-EditorController* EditorController::controller = NULL;
+void SurfaceViewController::getPickingID(GeometryPass* gP, double xpos, double ypos)
+{
+	int width, height;
+	glfwGetWindowSize(WindowContext::window, &width, &height);
+	auto picking = (PickingBuffer*)gP->frameBuffer->signatureLookup("PICKING");
+	auto data = picking->getValues(xpos, height - ypos);
+	gP->setupOnHover(data[0]);
 
-MenuController* MenuController::controller = NULL;
+//	cout << data[0] << endl;
 
-MenuController::MenuController()
+	delete[] data;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+PointSamplingController::PointSamplingController()
 {
 	key_callback = kC;
 	scroll_callback = sC;
@@ -191,35 +95,34 @@ MenuController::MenuController()
 	windowResize_callback = wRC;
 }
 
-MenuController::~MenuController()
+PointSamplingController::~PointSamplingController()
+{
+}
+
+void PointSamplingController::kC(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 
 }
-void MenuController::kC(GLFWwindow*, int, int, int, int)
-{
 
-}
-void MenuController::sC(GLFWwindow*, double, double)
+void PointSamplingController::sC(GLFWwindow* window, double xOffset, double yOffset)
 {
-}
-void MenuController::mC(GLFWwindow* window , int button, int action, int mods)
-{
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-}
-void MenuController::mPC(GLFWwindow* window, double xpos, double ypos)
-{
-	InputState::mouseCoords = glm::vec2(xpos, ypos);
-	InputState::mouseGuiCoords = mouseScreenToGUICoords(window, xpos, ypos);
-}
-void MenuController::wRC(GLFWwindow*, int, int)
-{
-	Camera::activeCamera->update();
+	SphericalCamera* cam = controller->context->cameras[0];
+	SurfaceViewController::cameraMovement(cam, xOffset, yOffset);
+	controller->context->dirty = true;
 }
 
-Controller* MenuController::getController()
+void PointSamplingController::mC(GLFWwindow* window, int button, int action, int mods)
 {
-	if (controller == NULL)
-		controller = new MenuController();
+}
 
-	return controller;
+void PointSamplingController::mPC(GLFWwindow* window, double xpos, double ypos)
+{
+	SurfaceViewController::getPickingID((GeometryPass*)controller->context->passRootNode, xpos, ypos);
+	controller->context->dirty = true;
+}
+
+void PointSamplingController::wRC(GLFWwindow* window, int a, int b)
+{
+	controller->context->cameras[0]->update();
+	controller->context->dirty = true;
 }

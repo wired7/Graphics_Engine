@@ -1,0 +1,7 @@
+﻿  Building Custom Rule C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/examples/CMakeLists.txt
+  CMake does not need to re-run because C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/examples/CMakeFiles/generate.stamp is up-to-date.
+  simple.c
+  glad.c
+  Generating Code...
+  simple.vcxproj -> C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\examples\Debug\simple.exe
+  simple.vcxproj -> C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/examples/Debug/simple.pdb (Full PDB)

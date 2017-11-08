@@ -1,0 +1,7 @@
+﻿  Building Custom Rule C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/examples/CMakeLists.txt
+  CMake does not need to re-run because C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/examples/CMakeFiles/generate.stamp is up-to-date.
+  wave.c
+  glad.c
+  Generating Code...
+  wave.vcxproj -> C:\Users\Andres\source\repos\Graphics_Engine\Resources\GLFW\vs15_x64\examples\Debug\wave.exe
+  wave.vcxproj -> C:/Users/Andres/source/repos/Graphics_Engine/Resources/GLFW/vs15_x64/examples/Debug/wave.pdb (Full PDB)

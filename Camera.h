@@ -45,28 +45,9 @@ public:
 
 	SphericalCamera(GLFWwindow* window, vec2 relativePosition, vec2 relativeDimensions, vec3 pos, vec3 lookAt, vec3 up, mat4 Projection);
 	virtual void update();
+	virtual void translate(vec2 offset);
 
 private:
 	double maxCamPhi;
-};
-
-class StateSpaceCamera : public Camera
-{
-public:
-	double camTheta = 0;
-	double camPhi = 0;
-	StateSpaceCamera(GLFWwindow* window, vec2 relativePosition, vec2 relativeDimensions, vec3 pos, vec3 lookAt, vec3 up, mat4 Projection);
-	void translate(vec2);
-	void update();
-
-private:
-	double maxCamPhi;
-};
-
-class MenuCamera : public Camera
-{
-public:
-	MenuCamera(GLFWwindow* window, vec2 relativePosition, vec2 relativeDimensions, vec3 pos, vec3 lookAt, vec3 up, mat4 Projection);
-	void update();
 };
 
