@@ -65,6 +65,13 @@ MeshObject::MeshObject(vector<Vertex> vertices, vector<GLuint> indices) : Decora
 	bindBuffers();
 }
 
+MeshObject::~MeshObject(void)
+{
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
+	glDeleteVertexArrays(1, &VAO);
+}
+
 void MeshObject::commitVBOToGPU()
 {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);

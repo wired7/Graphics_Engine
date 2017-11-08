@@ -58,7 +58,7 @@ public:
 
 	MeshObject();
 	MeshObject(vector<Vertex> vertices, vector<GLuint> indices);
-	~MeshObject() {};
+	~MeshObject();
 
 	virtual DecoratedGraphicsObject* make() { return NULL; };
 	virtual void computeNormals() {};
